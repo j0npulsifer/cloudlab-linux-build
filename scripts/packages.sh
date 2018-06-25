@@ -66,7 +66,7 @@ pip install -U mdv
 mkdir -vp /var/run/sshd
 
 # 1password cli
-curl -sSLO https://cache.agilebits.com/dist/1P/op/pkg/v"${OP_VERSION}"/op_linux_amd64_v"${OP_VERSION}".zip
+curl -sSLOJ https://cache.agilebits.com/dist/1P/op/pkg/v"${OP_VERSION}"/op_linux_amd64_v"${OP_VERSION}".zip
 unzip op_linux_amd64_v"${OP_VERSION}".zip
 
 # get le keys
