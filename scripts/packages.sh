@@ -26,7 +26,6 @@ apt-get -qqy update
 
 # prereqs
 apt-get -qqy install \
-  apt-transport-https \
   bash-completion \
   ca-certificates \
   cowsay \
@@ -44,7 +43,6 @@ apt-get -qqy install \
   jq \
   kubectl \
   lolcat \
-  lsb-release \
   make \
   man \
   netcat \
@@ -55,7 +53,6 @@ apt-get -qqy install \
   python-pip \
   rsync \
   shellcheck \
-  software-properties-common \
   sudo \
   telnet \
   tmux \

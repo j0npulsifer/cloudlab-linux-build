@@ -13,6 +13,11 @@ apt-get -qqy update
 apt-get -qqy upgrade
 
 # locales
-apt-get -qqy install locales language-pack-en
+apt-get -qqy install \
+  apt-transport-https \
+  language-pack-en \
+  lsb-release \
+  software-properties-common
+
 locale-gen "${LANG}"
 update-locale "${LANG}"
