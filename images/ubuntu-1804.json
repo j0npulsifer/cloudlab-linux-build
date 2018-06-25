@@ -1,21 +1,31 @@
 {
   "variables": {
-    "project": "trusted-builds",
-    "service_account_json": "credentials.json",
-    "language": "en_US.UTF-8"
+    "PROJECT": "trusted-builds",
+    "GCE_REGION": "{{env `GCE_REGION`}}",
+    "GCE_ZONE": "{{env `GCE_ZONE`}}",
+    "GCE_NETWORK": "{{env `GCE_NETWORK`}}",
+    "GCE_SUBNETWORK": "{{env `GCE_SUBNETWORK`}}",
+    "SERVICE_ACCOUNT": "{{env `SERVICE_ACCOUNT`}}",
+    "language": "en_US.UTF-8",
+    "LINUX_USER": "{{env `LINUX_USER`}}",
+    "LINUX_UUID": "{{env `LINUX_UUID`}}",
+    "GITHUB_USER": "{{env `GITHUB_USER`}}",
+    "DEP_VERSION": "{{env `DEP_VERSION`}}",
+    "GO_VERSION": "{{env `GO_VERSION`}}",
+    "OP_VERSION": "{{env `OP_VERSION`}}"
   },
   "builders": [
     {
       "type": "googlecompute",
-      "project_id": "{{user `project`}}",
+      "project_id": "{{user `PROJECT`}}",
       "source_image_family": "ubuntu-1804-lts",
       "source_image_project_id": "ubuntu-os-cloud",
       "image_family": "ubuntu-1804-lts",
       "image_description": "created with packer {{packer_version}} on {{isotime}} by {{build_name}} {{build_type}}",
       "image_name": "bionic-lab-{{isotime \"2006-01-02\"}}",
       "instance_name": "builder-packer-{{uuid}}",
-      "machine_type": "n1-standard-8",
-      "zone": "us-east4-b",
+      "machine_type": "n1-standard-4",
+      "zone": "{{user `GCE_ZONE`}}",
       "preemptible": "true",
       "ssh_username": "packer",
       "ssh_timeout": "10m",
@@ -23,8 +33,10 @@
       "state_timeout": "10m",
       "disk_size": "64",
       "disk_type": "pd-standard",
-      "network": "lab",
-      "subnetwork": "lab",
+      "network": "{{user `GCE_NETWORK`}}",
+      "subnetwork": "{{user `GCE_SUBNETWORK`}}",
+      "service_account_email": "{{user `SERVICE_ACCOUNT`}}",
+      "scopes": ["https://www.googleapis.com/auth/cloud-platform"],
       "tags": [
         "packer",
         "gce",
@@ -38,7 +50,7 @@
       "type": "shell",
       "script": "scripts/base.sh",
       "execute_command": "sudo -S sh -c '{{ .Vars  }} {{ .Path  }}'",
-      "environment_vars": ["LANG={{env `LANGUAGE`}}"]
+      "environment_vars": ["LANG={{user `LANGUAGE`}}"]
     },
     {
       "type": "shell",
@@ -46,9 +58,9 @@
       "execute_command": "sudo -S sh -c '{{ .Vars  }} {{ .Path  }}'",
       "environment_vars": [
         "DEBIAN_FRONTEND=noninteractive",
-        "DEP_VERSION={{env `DEP_VERSION`}}",
-        "GO_VERSION={{env `GO_VERSION`}}",
-        "OP_VERSION={{env `OP_VERSION`}}"
+        "DEP_VERSION={{user `DEP_VERSION`}}",
+        "GO_VERSION={{user `GO_VERSION`}}",
+        "OP_VERSION={{user `OP_VERSION`}}"
       ]
     },
     {
@@ -61,9 +73,9 @@
       "script": "scripts/user.sh",
       "execute_command": "sudo -S sh -c '{{ .Vars  }} {{ .Path  }}'",
       "environment_vars": [
-        "LINUX_USER={{env `LINUX_USER`}}",
-        "LINUX_UUID={{env `LINUX_UUID`}}",
-        "GITHUB_USER={{env `GITHUB_USER`}}"
+        "LINUX_USER={{user `LINUX_USER`}}",
+        "LINUX_UUID={{user `LINUX_UUID`}}",
+        "GITHUB_USER={{user `GITHUB_USER`}}"
       ]
     },
     {
