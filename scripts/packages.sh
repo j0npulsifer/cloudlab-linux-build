@@ -3,9 +3,9 @@ set -xueo pipefail
 
 RELEASE=$(lsb_release -sc)
 
-GO_VERSION=${GO_VERSION:-}
-OP_VERSION=${OP_VERSION:-}
-DEP_VERSION=${DEP_VERSION:-}
+GO_VERSION=${GO_VERSION:-1.10.3}
+OP_VERSION=${OP_VERSION:-0.4.1}
+DEP_VERSION=${DEP_VERSION:-0.4.1}
 
 add_gpg_keys() {
 	curl -fsSL "${1}" | apt-key add -
