@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -xueo pipefail
-
+export DEBIAN_FRONTEND=noninteractive
 RELEASE=$(lsb_release -sc)
 
 GO_VERSION=${GO_VERSION:-1.10.3}
@@ -66,7 +66,7 @@ pip install -U mdv
 mkdir -vp /var/run/sshd
 
 # 1password cli
-curl -sLO https://cache.agilebits.com/dist/1P/op/pkg/v"${OP_VERSION}"/op_linux_amd64_v"${OP_VERSION}".zip
+curl -sSLO https://cache.agilebits.com/dist/1P/op/pkg/v"${OP_VERSION}"/op_linux_amd64_v"${OP_VERSION}".zip
 unzip op_linux_amd64_v"${OP_VERSION}".zip
 
 # get le keys
