@@ -24,7 +24,7 @@ add_apt_repo "https://download.docker.com/linux/ubuntu ${RELEASE} stable"
 
 # falco
 add_gpg_keys "https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public"
-add_apt_repo "http://download.draios.com/stable/deb stable-\$\(ARCH\)\/"
+add_apt_repo "http://download.draios.com/stable/deb stable-\$(ARCH)/"
 
 # update the things
 apt-get -qqy update

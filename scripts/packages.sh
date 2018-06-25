@@ -24,13 +24,54 @@ add_apt_repo "https://packages.cloud.google.com/apt cloud-sdk-\"${RELEASE}\" mai
 # update the things
 apt-get -qqy update
 
-# install the things
+# prereqs
 apt-get -qqy install \
+  apt-transport-https \
+  bash-completion \
+  ca-certificates \
+  cowsay \
+  curl \
+  dnsutils \
+  figlet \
+  fortune \
+  gawk \
+  gcc \
+  git \
   google-cloud-sdk \
-  kubectl
+  inetutils-traceroute \
+  iputils-ping \
+  iputils-tracepath \
+  jq \
+  kubectl \
+  lolcat \
+  lsb-release \
+  make \
+  man \
+  netcat \
+  nmap \
+  openssh-client \
+  openssh-server \
+  python-dev \
+  python-pip \
+  rsync \
+  shellcheck \
+  software-properties-common \
+  sudo \
+  telnet \
+  tmux \
+  unzip \
+  vim \
+  wget
+
+# pip things
+pip install -U crcmod
+pip install -U mdv
+
+# ssh
+mkdir -vp /var/run/sshd
 
 # 1password cli
-curl -sLOJ https://cache.agilebits.com/dist/1P/op/pkg/v"${OP_VERSION}"/op_linux_amd64_v"${OP_VERSION}".zip
+curl -sLO https://cache.agilebits.com/dist/1P/op/pkg/v"${OP_VERSION}"/op_linux_amd64_v"${OP_VERSION}".zip
 unzip op_linux_amd64_v"${OP_VERSION}".zip
 
 # get le keys
@@ -48,17 +89,17 @@ gpg --verify op.sig op
 mv -v op /usr/local/bin/op
 
 # golang
-curl -sSLOJ https://dl.google.com/go/go"${GO_VERSION}".linux-amd64.tar.gz
+curl -sSLO https://dl.google.com/go/go"${GO_VERSION}".linux-amd64.tar.gz
 tar -xzf go"${GO_VERSION}".linux-amd64.tar.gz -C /usr/local
 
 # dep
-curl -sSLOJ https://github.com/golang/dep/releases/download/v"${DEP_VERSION}"/dep-linux-amd64
-curl -sSLOJ https://github.com/golang/dep/releases/download/v"${DEP_VERSION}"/dep-linux-amd64.sha256
+curl -sSLO https://github.com/golang/dep/releases/download/v"${DEP_VERSION}"/dep-linux-amd64
+curl -sSLO https://github.com/golang/dep/releases/download/v"${DEP_VERSION}"/dep-linux-amd64.sha256
 [ "$(sha256sum dep-linux-amd64 | awk '{print $1}')" == "$(awk '{print $1}' dep-linux-amd64.sha256)" ]
 mv -v dep-linux-amd64 /usr/local/bin/dep
 chmod +x /usr/local/bin/dep
 
 # skaffold
-curl -sSLOJ https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+curl -sSLO https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
 mv -v skaffold-linux-amd64 /usr/local/bin/skaffold
 chmod +x /usr/local/bin/skaffold
