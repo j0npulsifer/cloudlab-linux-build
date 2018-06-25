@@ -44,7 +44,6 @@ for KEYSERVER in \
 		break;
 	fi
 done
-gpg --receive-keys 3FEF9748469ADBE15DA7CA80AC2D62742012EA22
 gpg --verify op.sig op
 mv -v op /usr/local/bin/op
 
