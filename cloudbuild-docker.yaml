@@ -1,0 +1,24 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build',
+         '-t', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:latest',
+         '-t', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:$COMMIT_SHA',
+         '-f', 'images/ubuntu-1804.Dockerfile', '.']
+  env:
+  - 'LANGUAGE=${_LANGUAGE}'
+  - 'LINUX_USER=${_LINUX_USER}'
+  - 'LINUX_UUID=${_LINUX_UUID}'
+  - 'GITHUB_USER=${_GITHUB_USER}'
+  - 'GO_VERSION=${_GO_VERSION}'
+  - 'DEP_VERSION=${_DEP_VERSION}'
+  - 'OP_VERSION=${_OP_VERSION}'
+  waitFor: ['-']
+substitutions:
+  _LANGUAGE: 'en_US.UTF-8'
+  _LINUX_USER: 'jawn'
+  _LINUX_UUID: '1337'
+  _GITHUB_USER: 'j0npulsifer'
+  _GO_VERSION: '1.10.3'
+  _DEP_VERSION: '0.4.1'
+  _OP_VERSION: '0.4.1'
+images: ['gcr.io/$PROJECT_ID/cloudlab-linux-build']
