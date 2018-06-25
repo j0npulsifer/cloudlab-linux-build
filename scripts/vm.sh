@@ -34,4 +34,5 @@ apt-get -qqy install \
   datadog-agent \
   docker-ce \
   falco \
-  linux-headers-$(uname -r)
+  linux-headers-$(uname -r) \
+  unattended-upgrades

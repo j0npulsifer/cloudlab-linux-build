@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -xueo pipefail
 
-LINUX_USER="${LINUX_USER:-jawn}"
-LINUX_UUID="${LINUX_UUID:-1337}"
-GITHUB_USER="${GITHUB_USER:-j0npulsifer}"
+LINUX_USER="${LINUX_USER:-}"
+LINUX_UUID="${LINUX_UUID:-}"
+GITHUB_USER="${GITHUB_USER:-}"
 AUTHORIZED_KEYS="/var/ssh/${LINUX_USER}/authorized_keys"
 
 # user
