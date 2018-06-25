@@ -12,7 +12,7 @@ add_gpg_keys() {
 }
 
 add_apt_repo() {
-	add-apt-repository "deb [arch=amd64] \"${1}\""
+	add-apt-repository "deb [arch=amd64] ${1}"
 }
 
 cd "$(mktemp -d -t 'packer-XXXXX')"
