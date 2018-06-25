@@ -2,8 +2,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build',
          '-t', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:latest',
-         '-t', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:$COMMIT_SHA'
-         '-t', 'gcr.io/$PROJECT_ID'
+         '-t', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:$COMMIT_SHA',
          '-f', 'images/ubuntu-1804.Dockerfile', '.']
   env:
   - 'LANGUAGE=${_LANGUAGE}'
