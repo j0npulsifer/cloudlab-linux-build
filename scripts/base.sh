@@ -15,6 +15,8 @@ apt-get -qqy upgrade
 # locales
 apt-get -qqy install \
   apt-transport-https \
+  ca-certificates \
+  curl \
   language-pack-en \
   lsb-release \
   software-properties-common

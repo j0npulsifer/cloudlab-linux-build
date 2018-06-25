@@ -27,9 +27,7 @@ apt-get -qqy update
 # prereqs
 apt-get -qqy install \
   bash-completion \
-  ca-certificates \
   cowsay \
-  curl \
   dnsutils \
   figlet \
   fortune \
