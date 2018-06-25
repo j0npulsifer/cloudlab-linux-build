@@ -7,7 +7,7 @@ set -xeuo pipefail
 RELEASE=$(lsb_release -sc)
 
 add_gpg_keys() {
-  curl -fsSL ${1} | apt-key add -
+  curl -fsSL "${1}" | apt-key add -
 }
 
 add_apt_repo() {
@@ -24,7 +24,7 @@ add_apt_repo "https://download.docker.com/linux/ubuntu ${RELEASE} stable"
 
 # falco
 add_gpg_keys "https://s3.amazonaws.com/download.draios.com/DRAIOS-GPG-KEY.public"
-add_apt_repo 'http://download.draios.com/stable/deb stable-$(ARCH)/'
+add_apt_repo "http://download.draios.com/stable/deb stable-\$\(ARCH\)\/"
 
 # update the things
 apt-get -qqy update
@@ -34,5 +34,5 @@ apt-get -qqy install \
   datadog-agent \
   docker-ce \
   falco \
-  linux-headers-$(uname -r) \
+  linux-headers-"$(uname -r)" \
   unattended-upgrades

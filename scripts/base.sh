@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -xeuo pipefail
 
-DEBIAN_FRONTEND=noninteractive
+export DEBIAN_FRONTEND=noninteractive
 LANG=${LANG:-en_US.UTF-8}
 
 # root test
@@ -14,8 +14,8 @@ apt-get -qqy upgrade
 
 # locales
 apt-get -qqy install locales language-pack-en
-locale-gen ${LANG}
-update-locale ${LANG}
+locale-gen "${LANG}"
+update-locale "${LANG}"
 
 # prereqs
 apt-get -qqy install \
@@ -45,6 +45,7 @@ apt-get -qqy install \
   python-dev \
   python-pip \
   rsync \
+  shellcheck \
   software-properties-common \
   sudo \
   telnet \
