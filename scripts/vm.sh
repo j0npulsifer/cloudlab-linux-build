@@ -5,6 +5,7 @@ set -xeuo pipefail
 # aka it installs daemons like datadog and falco
 
 RELEASE=$(lsb_release -sc)
+LINUX_USER=${LINUX_USER:-jawn}
 
 add_gpg_keys() {
   curl -fsSL "${1}" | apt-key add -
@@ -36,3 +37,5 @@ apt-get -qqy install \
   falco \
   linux-headers-"$(uname -r)" \
   unattended-upgrades
+
+usermod -aG docker "${LINUX_USER}"
