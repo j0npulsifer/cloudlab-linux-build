@@ -34,7 +34,6 @@ apt-get -qqy install \
   iputils-ping \
   iputils-tracepath \
   jq \
-  linux-headers-$(uname -r) \
   lolcat \
   lsb-release \
   make \

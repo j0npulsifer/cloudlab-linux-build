@@ -33,4 +33,5 @@ apt-get -qqy update
 apt-get -qqy install \
   datadog-agent \
   docker-ce \
-  falco
+  falco \
+  linux-headers-$(uname -r)
