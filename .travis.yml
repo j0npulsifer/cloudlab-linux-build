@@ -1,22 +1,22 @@
 env:
-  - PROJECT=trusted-builds
-  - GCE_REGION=northamerica-northeast1
-  - GCE_ZONE=northamerica-northeast1-a
-  - GCE_NETWORK=builds
-  - GCE_SUBNETWORK=vms
-  - SERVICE_ACCOUN=builder@trusted-builds.iam.gserviceaccount.com
-  - LANGUAGE=en_US.UTF-8
-  - LINUX_USER=jawn
-  - LINUX_UUID=1337
-  - GITHUB_USER=j0npulsifer
-  - GO_VERSION=1.10.3
-  - DEP_VERSION=0.4.1
-  - OP_VERSION=0.4.1
-
+- PROJECT=trusted-builds \
+  GCE_REGION=northamerica-northeast1 \
+  GCE_ZONE=northamerica-northeast1-a \
+  GCE_NETWORK=builds \
+  GCE_SUBNETWORK=vms \
+  SERVICE_ACCOUN=builder@trusted-builds.iam.gserviceaccount.com \
+  LANGUAGE=en_US.UTF-8 \
+  LINUX_USER=jawn \
+  LINUX_UUID=1337 \
+  GITHUB_USER=j0npulsifer \
+  GO_VERSION=1.10.3 \
+  DEP_VERSION=0.4.1 \
+  OP_VERSION=0.4.1
 before_install:
-  - openssl aes-256-cbc -K $encrypted_30a8cc8c9f3c_key -iv $encrypted_30a8cc8c9f3c_iv -in credentials.json.enc -out credentials.json -d
-  - wget https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip && unzip packer_1.2.4_linux_amd64.zip && chmod +x packer
-  - packer validate images/*.json
-
+- openssl aes-256-cbc -K $encrypted_30a8cc8c9f3c_key -iv $encrypted_30a8cc8c9f3c_iv
+  -in credentials.json.enc -out credentials.json -d
+- wget https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip &&
+  unzip packer_1.2.4_linux_amd64.zip && chmod +x packer
+- packer validate images/*.json
 install:
-  - packer build --color=false images/ubuntu-1804.json
+- packer build --color=false images/ubuntu-1804.json
