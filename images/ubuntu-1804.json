@@ -17,7 +17,6 @@
   "builders": [
     {
       "type": "googlecompute",
-      "account_file": "credentials.json",
       "project_id": "{{user `PROJECT`}}",
       "source_image_family": "ubuntu-1804-lts",
       "source_image_project_id": "ubuntu-os-cloud",
@@ -66,11 +65,6 @@
     },
     {
       "type": "shell",
-      "script": "scripts/vm.sh",
-      "execute_command": "sudo -S sh -c '{{ .Vars  }} {{ .Path  }}'"
-    },
-    {
-      "type": "shell",
       "script": "scripts/user.sh",
       "execute_command": "sudo -S sh -c '{{ .Vars  }} {{ .Path  }}'",
       "environment_vars": [
@@ -78,6 +72,11 @@
         "LINUX_UUID={{user `LINUX_UUID`}}",
         "GITHUB_USER={{user `GITHUB_USER`}}"
       ]
+    },
+    {
+      "type": "shell",
+      "script": "scripts/vm.sh",
+      "execute_command": "sudo -S sh -c '{{ .Vars  }} {{ .Path  }}'"
     },
     {
       "type": "file",

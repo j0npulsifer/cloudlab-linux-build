@@ -37,3 +37,5 @@ apt-get -qqy install \
   falco \
   linux-headers-"$(uname -r)" \
   unattended-upgrades
+
+usermod -aG docker "${LINUX_USER}"
