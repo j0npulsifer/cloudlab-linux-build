@@ -13,10 +13,8 @@ env:
   DEP_VERSION=0.4.1 \
   OP_VERSION=0.4.1
 before_install:
-- openssl aes-256-cbc -K $encrypted_30a8cc8c9f3c_key -iv $encrypted_30a8cc8c9f3c_iv
-  -in credentials.json.enc -out credentials.json -d
-- wget https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip &&
-  unzip packer_1.2.4_linux_amd64.zip && chmod +x packer
+- openssl aes-256-cbc -K $encrypted_30a8cc8c9f3c_key -iv $encrypted_30a8cc8c9f3c_iv -in credentials.json.enc -out credentials.json -d
+- wget https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip && unzip packer_1.2.4_linux_amd64.zip && chmod +x packer
 - packer validate images/*.json
 install:
 - packer build --color=false images/ubuntu-1804.json
