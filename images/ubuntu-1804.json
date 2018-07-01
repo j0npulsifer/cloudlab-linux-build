@@ -17,6 +17,7 @@
   "builders": [
     {
       "type": "googlecompute",
+      "account_file": "credentials.json",
       "project_id": "{{user `PROJECT`}}",
       "source_image_family": "ubuntu-1804-lts",
       "source_image_project_id": "ubuntu-os-cloud",
