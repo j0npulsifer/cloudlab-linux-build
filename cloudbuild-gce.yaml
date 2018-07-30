@@ -1,6 +1,6 @@
 steps:
 - name: 'hashicorp/packer:light'
-  args: ['build', '-color=false', 'images/ubuntu-1804.json']
+  args: ['build', '-color=false', 'images/ubuntu-1804-gce.json']
   timeout: 600s
   env:
   - 'GCE_REGION=${_GCE_REGION}'

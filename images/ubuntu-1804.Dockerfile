@@ -7,7 +7,8 @@ LABEL maintainer=jonathan@pulsifer.ca \
 
 WORKDIR /tmp/build
 COPY scripts scripts
-RUN ./scripts/base.sh \
+RUN chmod +x ./scripts/*.sh \
+ && ./scripts/base.sh \
  && ./scripts/packages.sh \
  && ./scripts/user.sh
 
