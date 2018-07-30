@@ -65,7 +65,7 @@
       " keyboard-configuration/variant=USA",
       " locale=en_US",
       " netcfg/get_domain=vm",
-      " netcfg/get_hostname=vagrant",
+      " netcfg/get_hostname=packer",
       " noapic",
       " preseed/file=/floppy/preseed.cfg",
       " -- ",
