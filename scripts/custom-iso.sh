@@ -32,7 +32,7 @@ ISO_URL="${BASE_URL}/ubuntu-${UBUNTU_VERSION}.${PATCH_VERSION}-server-amd64.iso"
 # clean up when we're done no matter wat
 cleanup() {
     # only unmount if there is an error
-    [ $? -gt 0 ] && unmount_iso
+    [ $? -gt 0 ] && unmount_iso "${ATTACHED_DISK}"
     echo "Run this command to remove all the temp files:"
     echo /bin/rm -rv "${WORKDIR}"
 }
@@ -60,19 +60,19 @@ verify_files() {
 unpack_iso() {
     # macOS mount
     # https://unix.stackexchange.com/questions/298685/can-a-mac-mount-a-debian-install-cd
-    hdiutil attach -nomount "ubuntu-${UBUNTU_VERSION}.${PATCH_VERSION}-server-amd64.iso"
-    # TODO: dynamically grab the disk that was attached
-    mount -t cd9660 /dev/disk2 "${ISO_MOUNT_DIR}"
+    ATTACHED_DISK=$(hdiutil attach -nomount "ubuntu-${UBUNTU_VERSION}.${PATCH_VERSION}-server-amd64.iso" | head -n 1 | awk '{print $1}')
+    mount -t cd9660 "${ATTACHED_DISK}" "${ISO_MOUNT_DIR}"
 
     # copy iso contents
     rsync -av "${ISO_MOUNT_DIR}" "${CD_IMAGE_DIR}"
 
-    unmount_iso
+    unmount_iso "${ATTACHED_DISK}"
 }
 
 unmount_iso() {
-    umount /dev/disk2
-    hdiutil detach /dev/disk2
+    [ -z "$1" ] && { echo "Something went awry"; exit 1; }
+    umount "$1"
+    hdiutil detach "$1"
 }
 
 edit_bootloader() {
