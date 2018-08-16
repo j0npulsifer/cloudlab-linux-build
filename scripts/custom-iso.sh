@@ -2,7 +2,7 @@
 set -eu
 
 # where we do the things
-WORKDIR="$(mktmp -d)"
+WORKDIR="tmpdir"
 ISO_MOUNT_DIR="$(mkdir -p ${WORKDIR}/mount)"
 CDIMAGE_DIR="$(mkdir -p ${WORKDIR}/cdimage)"
 
@@ -11,10 +11,12 @@ CDIMAGE_DIR="$(mkdir -p ${WORKDIR}/cdimage)"
 CUSTOM_ISO_PATH="/tmp/fresh.iso"
 
 # ubuntu iso and checksum
-UBUNTU_VERSION="18.04"
-PATCH_VERSION="1"
-BASE_URL="http://cdimage.ubuntu.com/releases/${UBUNTU_VERSION}/release"
-
+UBUNTU_VERSION="16.04"
+PATCH_VERSION="5"
+# XENIAL BASEURL
+BASE_URL="http://releases.ubuntu.com/${UBUNTU_VERSION}"
+# BIONIC BASEURL
+# BASE_URL="http://cdimage.ubuntu.com/releases/${UBUNTU_VERSION}/release"
 ISO_URL="${BASE_URL}/ubuntu-${UBUNTU_VERSION}.${PATCH_VERSION}-server-amd64.iso"
 
 # clean up when we're done no matter wat
@@ -26,7 +28,9 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # downloads
-download_iso() { curl -OJL "${ISO_URL}" }
+download_iso() { 
+    curl -OJL "${ISO_URL}"
+}
 download_checksums() { 
     curl -OJL "${BASE_URL}/SHA256SUMS"
     curl -OJL "${BASE_URL}/SHA256SUMS.gpg"
@@ -41,27 +45,30 @@ verify_files() {
 }
 
 unpack_iso() {
-    if [ `uname` = "Darwin"]; then
+    if [ "$(uname)" = "Darwin" ]; then
         # macOS mount
         # https://unix.stackexchange.com/questions/298685/can-a-mac-mount-a-debian-install-cd
-        hdiutil attach -nomount ubuntu-${UBUNTU_RELEASE}.${PATCH_NUMBER}-server-amd64.iso
+        hdiutil attach -nomount "ubuntu-${UBUNTU_RELEASE}.${PATCH_NUMBER}-server-amd64.iso"
         # TODO: dynamically grab the disk that was attached
-        mount -t cd9660 /dev/disk2 "${ISO_MOUNT_DIR}"        
+        mount -t cd9660 /dev/disk2 "${ISO_MOUNT_DIR}"
     else
         # linux mount
         # mount -o loop "ubuntu-${UBUNTU_RELEASE}.${PATCH_NUMBER}-server-amd64.iso" "${ISO_MOUNT_DIR}"
+        echo "LEL"
     fi
+
 
     # copy iso contents
     sudo cp -R "${ISO_MOUNT_DIR}" "${CDIMAGE_DIR}"
 
-    if [ `uname` = "Darwin"]; then
+    if [ "$(uname)" = "Darwin" ]; then
         # macOS unmount
         umount /dev/disk2
         hdiutil detach /dev/disk2
     else
         # linux umount
         # umount "${ISO_MOUNT_DIR}"
+        echo "LEL"
     fi
 }
 
@@ -88,7 +95,7 @@ repack_iso() {
             -J -l -b isolinux/isolinux.bin \
             -c isolinux/boot.cat -no-emul-boot \
             -boot-load-size 4 -boot-info-table \
-            -o ${CUSTOM_ISO_PATH} ${CDIMAGE_DIR}
+            -o "${CUSTOM_ISO_PATH}" "${CDIMAGE_DIR}"
 }
 
 ########################
