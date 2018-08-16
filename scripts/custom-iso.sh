@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -xeuo pipefail
+set -euo pipefail
 
 # where we do the things
 WORKDIR="$(mktmp -d)"
@@ -16,7 +16,6 @@ PATCH_VERSION="1"
 BASE_URL="http://cdimage.ubuntu.com/releases/${UBUNTU_VERSION}/release"
 
 ISO_URL="${BASE_URL}/ubuntu-${UBUNTU_VERSION}.${PATCH_VERSION}-server-amd64.iso"
-ISO_SHA256="a5b0ea5918f850124f3d72ef4b85bda82f0fcd02ec721be19c1a6952791c8ee8"
 
 # clean up when we're done no matter wat
 cleanup() {
