@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eu
 
 # where we do the things
 WORKDIR="$(mktmp -d)"
@@ -45,11 +45,11 @@ unpack_iso() {
         # macOS mount
         # https://unix.stackexchange.com/questions/298685/can-a-mac-mount-a-debian-install-cd
         hdiutil attach -nomount ubuntu-${UBUNTU_RELEASE}.${PATCH_NUMBER}-server-amd64.iso
+        # TODO: dynamically grab the disk that was attached
+        mount -t cd9660 /dev/disk2 "${ISO_MOUNT_DIR}"        
     else
         # linux mount
         # mount -o loop "ubuntu-${UBUNTU_RELEASE}.${PATCH_NUMBER}-server-amd64.iso" "${ISO_MOUNT_DIR}"
-        # TODO: dynamically grab the disk that was attached
-        mount -t cd9660 /dev/disk2 "${ISO_MOUNT_DIR}"
     fi
 
     # copy iso contents
