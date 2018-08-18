@@ -1,50 +1,72 @@
 #!/usr/bin/env bash
 set -eu
 
-# run as root check
-! [ "$(id -u)" = "0" ] && { echo "Please run this script as root"; exit 1; }
-# macos check
-! [ "$(uname)" = "Darwin" ] && { echo "This script works on macOS only sry bout that"; exit 1; }
-# dependencies
-command -v gpg >/dev/null || { echo "Can not find gpg. Please run: brew install gpg"; exit 1; }
-command -v mkisofs >/dev/null || { echo "Can not find mkisofs. Please run: brew install cdrtools"; exit 1; }
+# ubuntu version
+MAJOR_VERSION="18.04"
+PATCH_VERSION="1"
+
+# this is where you want the custom iso to end up
+# default: 2018-08-18-ubuntu-18.04.1.iso
+CUSTOM_ISO_PATH="$(date +%Y-%m-%d)-ubuntu-${MAJOR_VERSION}.${PATCH_VERSION}.iso"
 
 # where we build
 WORKDIR="build"
 ISO_MOUNT_DIR="mount"
 CD_IMAGE_DIR="cd-image"
+
+# location of the ISO based on MAJOR_VERSION (16, 18)
+case "${MAJOR_VERSION:0:2}" in
+  16) BASE_URL="http://releases.ubuntu.com/${MAJOR_VERSION}";; # XENIAL
+  18) BASE_URL="http://cdimage.ubuntu.com/releases/${MAJOR_VERSION}/release";; # BIONIC
+esac
+ISO_FILENAME="ubuntu-${MAJOR_VERSION}.${PATCH_VERSION}-server-amd64.iso"
+ISO_URL="${BASE_URL}/${ISO_FILENAME}"
+
+# get machine type
+case $(uname -s) in
+  Linux)  OS=linux;;
+  Darwin) OS=mac;;
+  *) { echo "This script works on macOS only sry bout that"; exit 1; };;
+esac
+
+# run as root check
+# ! [ "$(id -u)" = "0" ] && { echo "Please run this script as root"; exit 1; }
+
+# dependencies
+dependencies=(gpg mkisofs)
+for dep in "${dependencies[@]}"; do
+    command -v "${dep}" >/dev/null || { echo "Can not find ${dep}. Please ensure it is installed and in your PATH"; exit 1; }
+done
+
+
 # create the dirs
-mkdir -p "${WORKDIR}" "${WORKDIR}/${ISO_MOUNT_DIR}" "${WORKDIR}/${CD_IMAGE_DIR}"
-
-#### CHANGE ME ####
-# this is where you want the custom iso to end up
-CUSTOM_ISO_PATH="fresh.iso"
-
-# ubuntu iso and checksum
-UBUNTU_VERSION="16.04"
-PATCH_VERSION="5"
-# XENIAL BASEURL
-BASE_URL="http://releases.ubuntu.com/${UBUNTU_VERSION}"
-# BIONIC BASEURL
-# BASE_URL="http://cdimage.ubuntu.com/releases/${UBUNTU_VERSION}/release"
-ISO_URL="${BASE_URL}/ubuntu-${UBUNTU_VERSION}.${PATCH_VERSION}-server-amd64.iso"
+create_dirs() {
+    mkdir -p "${WORKDIR}" "${WORKDIR}/${ISO_MOUNT_DIR}" "${WORKDIR}/${CD_IMAGE_DIR}"
+}
 
 # clean up when we're done no matter wat
 cleanup() {
     # only unmount if there is an error
-    [ $? -gt 0 ] && unmount_iso "${ATTACHED_DISK}"
-    echo "Run this command to remove all the temp files:"
-    echo /bin/rm -rv "${WORKDIR}"
+    if [ $? -gt 0 ]; then
+      if [ "${OS}" = "linux" ]; then
+        unmount_iso "${ISO_MOUNT_DIR}"
+      elif [ "${OS}" = "macos" ]; then
+        unmount_iso "${ATTACHED_DISK}"
+      fi
+    fi
+    echo "Clean up by running these commands:"
+    echo "  rm -rv ${WORKDIR}/${CD_IMAGE_DIR}"
+    echo "  rmdir ${WORKDIR}/${ISO_MOUNT_DIR}"
 }
 # traps exits, SIGINT and SIGTERM
 trap cleanup EXIT INT TERM
 
 # downloads
-download_iso() { 
-    curl -OJL "${ISO_URL}"
+download_iso() {
+    [ -f "${ISO_FILENAME}" ] || curl -OJL "${ISO_URL}"
 }
 
-download_checksums() { 
+download_checksums() {
     curl -OJL "${BASE_URL}/SHA256SUMS"
     curl -OJL "${BASE_URL}/SHA256SUMS.gpg"
 }
@@ -54,32 +76,41 @@ verify_files() {
     gpg --verify SHA256SUMS.gpg SHA256SUMS
 
     # probably a better way to do this
-    shasum -a 256 -c SHA256SUMS 2>&1 | grep OK
+    { shasum -a 256 -c SHA256SUMS 2>&1 | grep OK; } || { download_iso && verify_files; }
 }
 
 unpack_iso() {
-    # macOS mount
-    # https://unix.stackexchange.com/questions/298685/can-a-mac-mount-a-debian-install-cd
-    ATTACHED_DISK=$(hdiutil attach -nomount "ubuntu-${UBUNTU_VERSION}.${PATCH_VERSION}-server-amd64.iso" | head -n 1 | awk '{print $1}')
-    mount -t cd9660 "${ATTACHED_DISK}" "${ISO_MOUNT_DIR}"
-
-    # copy iso contents
-    rsync -av "${ISO_MOUNT_DIR}" "${CD_IMAGE_DIR}"
-
-    unmount_iso "${ATTACHED_DISK}"
+    if [ "${OS}" = "macos" ]; then
+        # macOS mount
+        # https://unix.stackexchange.com/questions/298685/can-a-mac-mount-a-debian-install-cd
+        ATTACHED_DISK=$(hdiutil attach -nomount "${ISO_FILENAME}" | head -n 1 | awk '{print $1}')
+        mount -t cd9660 "${ATTACHED_DISK}" "${ISO_MOUNT_DIR}"
+        # copy iso contents
+        rsync -av "${ISO_MOUNT_DIR}" "${CD_IMAGE_DIR}"
+        unmount_iso "${ATTACHED_DISK}"
+    elif [ "${OS}" = "linux" ]; then
+        mount -o loop "${ISO_FILENAME}" "${ISO_MOUNT_DIR}"
+        # copy iso contents
+        rsync -av "${ISO_MOUNT_DIR}" "${CD_IMAGE_DIR}"
+        unmount_iso "${ISO_MOUNT_DIR}"
+    fi
 }
 
 unmount_iso() {
-    [ -z "$1" ] && { echo "Something went awry"; exit 1; }
-    umount "$1"
-    hdiutil detach "$1"
+    if [ "${OS}" = "macos" ]; then
+        [ -z "$1" ] && { echo "Something went wrong, please manually unmount the ISO"; exit 1; }
+        umount "$1"
+        hdiutil detach "$1"
+    elif [ "${OS}" = "linux" ]; then
+        umount "$1"
+    fi
 }
 
 edit_bootloader() {
     # set timeout to 1s
-    sed -i '' -e 's/^timeout 300/timeout 10/' ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg
+    sed -i'' -e 's/^timeout 300/timeout 10/' ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg
     # set default to the LABEL nuc
-    sed -i '' -e 's/^default.*/default nuc/' ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg
+    sed -i'' -e 's/^default.*/default nuc/' ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg
     # add LABEL nuc
     tee -a ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg <<EOF
 LABEL nuc
@@ -93,7 +124,7 @@ copy_preseed() {
 }
 
 repack_iso() {
-    mkisofs -r -V "Ubuntu ${UBUNTU_VERSION} preseed" \
+    mkisofs -r -V "Ubuntu ${MAJOR_VERSION} preseed" \
             -cache-inodes \
             -J -l -b isolinux/isolinux.bin \
             -c isolinux/boot.cat -no-emul-boot \
@@ -103,7 +134,9 @@ repack_iso() {
 
 ########################
 # THIS IS THE ORDER OF OPERATIONS
-# enter temp dir
+
+# create and enter working dirs
+create_dirs
 cd "${WORKDIR}"
 
 # download and verify
