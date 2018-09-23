@@ -17,7 +17,7 @@ apt-get -qqy install \
   apt-transport-https \
   ca-certificates \
   curl \
-  language-pack-en \
+  language-pack-en-base \
   lsb-release \
   software-properties-common
 
