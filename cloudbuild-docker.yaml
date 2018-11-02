@@ -1,6 +1,7 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build',
+         '--cache-from', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:latest',
          '-t', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:latest',
          '-t', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:$COMMIT_SHA',
          '-f', 'images/ubuntu-1804.Dockerfile', '.']
@@ -20,7 +21,7 @@ substitutions:
   _GITHUB_USER: 'j0npulsifer'
   _GO_VERSION: '1.11'
   _DEP_VERSION: '0.5.0'
-  _OP_VERSION: '0.5.3'
+  _OP_VERSION: '0.5.4'
 tags:
-- packer
+- docker
 images: ['gcr.io/$PROJECT_ID/cloudlab-linux-build']
