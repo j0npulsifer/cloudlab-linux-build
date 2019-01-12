@@ -4,7 +4,7 @@ export DEBIAN_FRONTEND=noninteractive
 RELEASE=$(lsb_release -sc)
 
 GO_VERSION=${GO_VERSION:-1.11}
-OP_VERSION=${OP_VERSION:-0.5.3}
+OP_VERSION=${OP_VERSION:-0.5.5}
 DEP_VERSION=${DEP_VERSION:-0.5.0}
 
 add_gpg_keys() {
