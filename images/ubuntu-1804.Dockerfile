@@ -15,4 +15,5 @@ RUN chmod +x ./scripts/*.sh \
 COPY etc/environment /etc/
 COPY etc/ssh/sshd_config /etc/ssh/
 
+WORKDIR /
 ENTRYPOINT ["/usr/sbin/sshd", "-De"]
