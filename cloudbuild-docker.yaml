@@ -1,6 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['pull', 'gcr.io/trusted-builds/ubuntu-1804-base']
+  args: ['pull', 'gcr.io/trusted-builds/${_BASEIMAGE}']
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build',
          '--cache-from', 'gcr.io/$PROJECT_ID/cloudlab-linux-build:latest',
@@ -17,6 +17,7 @@ steps:
   - 'OP_VERSION=${_OP_VERSION}'
   timeout: 600s
 substitutions:
+  _BASEIMAGE: 'gcr.io/trusted-builds/ubuntu-1804-base:20190122'
   _LANGUAGE: 'en_US.UTF-8'
   _LINUX_USER: 'jawn'
   _LINUX_UUID: '1337'
