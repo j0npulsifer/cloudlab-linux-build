@@ -1,4 +1,4 @@
-FROM gcr.io/trusted-builds/ubuntu-1804-base
+FROM gcr.io/trusted-builds/ubuntu-1804-base:20190122
 LABEL maintainer=jonathan@pulsifer.ca \
       ca.pulsifer.os=linux \
       ca.pulsifer.distro=ubuntu \
