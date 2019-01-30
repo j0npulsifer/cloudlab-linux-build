@@ -1,6 +1,9 @@
 FROM gcr.io/trusted-builds/ubuntu-1804-base
-RUN apt-get -qqy update && apt-get -qqy upgrade
-RUN apt-get -qqy install make gpg wget
+
+ENV PACKAGES git gpg make wget
+
+RUN apt-get -qqy update && apt-get -qqy upgrade && \
+    apt-get -qqy install ${PACKAGES}
 
 # google cloud build
 WORKDIR /workspace
