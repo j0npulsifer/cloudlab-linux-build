@@ -2,7 +2,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build',
           '-t', 'baseimage-builder',
-          '-f', 'images/ubuntu-builder.Dockerfile',
+          '-f', 'images/builder.Dockerfile',
           '.' ]
 - name: 'baseimage-builder'
   args: ['make', 'verify-baseimage']

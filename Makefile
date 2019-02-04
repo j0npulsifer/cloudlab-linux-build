@@ -39,8 +39,8 @@ push: clean verify-baseimage build ## Tag and push new Dockerfile
 	docker push $(FULL_IMAGE_URL):$(RELEASE)
 
 .PHONY: build-local
-build-local: ## Build Docker container locally (assumes docker present)
-	cp -v $(CURDIR)/images/$(IMAGE_NAME).Dockerfile $(BUILD_DIR)/Dockerfile && \
+build-local: update-baseimage ## Build Docker container locally (assumes docker present)
+	cp -v $(CURDIR)/images/base.Dockerfile $(BUILD_DIR)/Dockerfile && \
 	docker build -t $(FULL_IMAGE_URL) $(BUILD_DIR)
 
 .PHONY: clean

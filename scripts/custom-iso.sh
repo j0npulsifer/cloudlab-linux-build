@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eu
 
+source util.sh
+
 # ubuntu version
 MAJOR_VERSION="18.04"
 PATCH_VERSION="1"
@@ -72,7 +74,8 @@ download_checksums() {
 }
 
 verify_files() {
-    gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 0xFBB75451 0xEFE21092
+    add_gpg_key 0xFBB75451
+    add_gpg_key 0xEFE21092
     gpg --verify SHA256SUMS.gpg SHA256SUMS
 
     # probably a better way to do this
