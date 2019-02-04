@@ -16,7 +16,7 @@ FULL_IMAGE_URL=$(REGISTRY)/$(PROJECT)/$(IMAGE_NAME)
 GPG_KEY=D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81
 
 .PHONY: all
-all: clean verify-baseimage build ## Download and verify the latest base image
+all: clean verify-baseimage build-local ## Download and verify the latest base image
 
 .PHONY: update-baseimage
 update-baseimage: clean verify-baseimage ## Updates the baseimage manifest and serial
@@ -34,7 +34,7 @@ verify-baseimage: clean ## Download and verify the latest base image
 	sha256sum --ignore-missing -c SHA256SUMS
 
 .PHONY: push
-push: clean verify-baseimage build ## Tag and push new Dockerfile
+push: clean verify-baseimage build-local ## Tag and push new Dockerfile
 	docker tag $(FULL_IMAGE_URL) $(FULL_IMAGE_URL):$(RELEASE) && \
 	docker push $(FULL_IMAGE_URL):$(RELEASE)
 
