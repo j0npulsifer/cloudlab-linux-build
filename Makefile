@@ -5,9 +5,9 @@ BASE_TARBALL=$(BASE_PACKAGE)-root.tar.gz
 BUILD_DIR=build
 KERNEL_MAJOR_VERSION=5
 KERNEL_MINOR_VERSION=4
-KERNEL_PATCH_VERSION=11
+KERNEL_PATCH_VERSION=12
+KERNEL_LOCAL_VERSION=-cloudlab
 KERNEL_VERSION=$(KERNEL_MAJOR_VERSION).$(KERNEL_MINOR_VERSION).$(KERNEL_PATCH_VERSION)
-KERNEL_LOCALVERSION=-cloudlab
 
 REGISTRY=gcr.io
 PROJECT=trusted-builds
@@ -21,12 +21,18 @@ FULL_IMAGE_URL=$(REGISTRY)/$(PROJECT)/$(IMAGE_NAME)
 GPG_KEY=D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81
 
 .PHONY: all
-all: help ## Prints help message
+all: help
+
+.PHONY: container
+container: verify-baseimage update-baseimage build-container ## Downloads, verifies, updates, and builds the this repo
+
+.PHONY: kernel
+kernel: verify-kernel genkconf build-kernel # Downloads, verifies, configures, and starts a kernel build
 
 .PHONY: update-baseimage
-update-baseimage: verify-baseimage ## Updates the baseimage manifest and serial
-	stat -c %y $(BUILD_DIR)/$(BASE_TARBALL) | awk '{print $$1}' | tr -d \- > $(CURDIR)/current && \
-	cp -v $(BUILD_DIR)/$(BASE_PACKAGE).manifest $(CURDIR)
+update-baseimage: ## Updates the baseimage manifest and serial
+	stat -c %y $(BUILD_DIR)/$(BASE_TARBALL) | awk '{print $$1}' | tr -d \- > $(CURDIR)/baseimage/current && \
+	cp -v $(BUILD_DIR)/$(BASE_PACKAGE).manifest $(CURDIR)/baseimage
 
 .PHONY: verify-baseimage
 verify-baseimage: ## Download and verify the latest base image
@@ -38,38 +44,42 @@ verify-baseimage: ## Download and verify the latest base image
 	gpg --batch --verify SHA256SUMS.gpg SHA256SUMS && \
 	sha256sum --ignore-missing -c SHA256SUMS
 
-.PHONY: download-kernel
-download-kernel: ## Downloads and verifies KERNEL_VERSION
+.PHONY: push
+push:  verify-baseimage build-container # Tag and push new Dockerfile
+	docker tag $(FULL_IMAGE_URL) $(FULL_IMAGE_URL):$(RELEASE) && \
+	docker push $(FULL_IMAGE_URL):$(RELEASE)
+
+.PHONY: build
+build: build-container
+
+.PHONY: build-container
+build-container: update-baseimage # Build Docker container locally
+	cp -v $(CURDIR)/images/base.Dockerfile $(BUILD_DIR)/Dockerfile && \
+	docker build -t $(FULL_IMAGE_URL) $(BUILD_DIR)
+
+.PHONY: verify-kernel
+download-kernel: ## Downloads and verifies $(KERNEL_VERSION)
 	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && \
 	wget -q --no-clobber https://cdn.kernel.org/pub/linux/kernel/v$(KERNEL_MAJOR_VERSION).x/linux-$(KERNEL_VERSION).tar.xz && \
 	wget -q --no-clobber https://cdn.kernel.org/pub/linux/kernel/v$(KERNEL_MAJOR_VERSION).x/linux-$(KERNEL_VERSION).tar.sign && \
 	gpg -q --locate-keys torvalds@kernel.org gregkh@kernel.org && \
-	unxz -kf linux-$(KERNEL_VERSION).tar.xz && gpg -q --verify linux-$(KERNEL_VERSION).tar.sign && \
-	tar -xf linux-$(KERNEL_VERSION).tar
-
-.PHONY: genkconf
-genkconf: ## copies a kconfig from /boot into the build dir
-	cd $(BUILD_DIR)/linux-$(KERNEL_VERSION) && \
-	make olddefconfig
+	unxz -c linux-$(KERNEL_VERSION).tar.xz | gpg -q --verify linux-$(KERNEL_VERSION).tar.sign - && \
+	tar -xaf linux-$(KERNEL_VERSION).tar.xz
 
 .PHONY: build-kernel
 build-kernel: ## Builds .debs of the kernel
 	cd $(BUILD_DIR) && \
 	make -j$(shell getconf _NPROCESSORS_ONLN) -C linux-$(KERNEL_VERSION)/ bindeb-pkg LOCALVERSION=$(KERNEL_LOCALVERSION)
 
-.PHONY: push
-push: verify-baseimage build-local ## Tag and push new Dockerfile
-	docker tag $(FULL_IMAGE_URL) $(FULL_IMAGE_URL):$(RELEASE) && \
-	docker push $(FULL_IMAGE_URL):$(RELEASE)
-
-.PHONY: build-local
-build-local: update-baseimage ## Build Docker container locally (assumes docker present)
-	cp -v $(CURDIR)/images/base.Dockerfile $(BUILD_DIR)/Dockerfile && \
-	docker build -t $(FULL_IMAGE_URL) $(BUILD_DIR)
+.PHONY: genkconf
+genkconf: ## copies a kconfig from /boot into the build dir and makes olddefconfig
+	cd $(BUILD_DIR)/linux-$(KERNEL_VERSION) && \
+	cp -v /boot/config-$(shell uname -r) .config && \
+	make olddefconfig
 
 .PHONY: clean
 clean: ## Remove build artifacts
-	rm  -rv $(BUILD_DIR)/* && rmdir -v $(BUILD_DIR) || echo "$(BUILD_DIR) does not exist. Nothing to do."
+	rm -r $(BUILD_DIR)
 
 .PHONY: help
 help: ## ty jessfraz
