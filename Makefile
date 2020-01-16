@@ -27,7 +27,7 @@ all: help
 container: verify-baseimage update-baseimage build-container ## Downloads, verifies, updates, and builds the this repo
 
 .PHONY: kernel
-kernel: verify-kernel genkconf build-kernel # Downloads, verifies, configures, and starts a kernel build
+kernel: verify-kernel genkconf build-kernel ## Downloads, verifies, configures, and starts a kernel build
 
 .PHONY: update-baseimage
 update-baseimage: ## Updates the baseimage manifest and serial
@@ -45,7 +45,7 @@ verify-baseimage: ## Download and verify the latest base image
 	sha256sum --ignore-missing -c SHA256SUMS
 
 .PHONY: push
-push:  verify-baseimage build-container # Tag and push new Dockerfile
+push: verify-baseimage build-container ## Tag and push new Dockerfile
 	docker tag $(FULL_IMAGE_URL) $(FULL_IMAGE_URL):$(RELEASE) && \
 	docker push $(FULL_IMAGE_URL):$(RELEASE)
 
@@ -58,7 +58,7 @@ build-container: update-baseimage # Build Docker container locally
 	docker build -t $(FULL_IMAGE_URL) $(BUILD_DIR)
 
 .PHONY: verify-kernel
-download-kernel: ## Downloads and verifies $(KERNEL_VERSION)
+verify-kernel: ## Downloads and verifies $(KERNEL_VERSION)
 	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && \
 	wget -q --no-clobber https://cdn.kernel.org/pub/linux/kernel/v$(KERNEL_MAJOR_VERSION).x/linux-$(KERNEL_VERSION).tar.xz && \
 	wget -q --no-clobber https://cdn.kernel.org/pub/linux/kernel/v$(KERNEL_MAJOR_VERSION).x/linux-$(KERNEL_VERSION).tar.sign && \
