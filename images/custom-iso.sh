@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
-source util.sh
-
 # ubuntu version
 MAJOR_VERSION="18.04"
-PATCH_VERSION="1"
+PATCH_VERSION="3"
 
 # this is where you want the custom iso to end up
 # default: 2018-08-18-ubuntu-18.04.1.iso
@@ -35,7 +33,7 @@ esac
 # ! [ "$(id -u)" = "0" ] && { echo "Please run this script as root"; exit 1; }
 
 # dependencies
-dependencies=(gpg mkisofs)
+dependencies=(curl gpg2 mkisofs)
 for dep in "${dependencies[@]}"; do
     command -v "${dep}" >/dev/null || { echo "Can not find ${dep}. Please ensure it is installed and in your PATH"; exit 1; }
 done
@@ -74,9 +72,8 @@ download_checksums() {
 }
 
 verify_files() {
-    add_gpg_key 0xFBB75451
-    add_gpg_key 0xEFE21092
-    gpg --verify SHA256SUMS.gpg SHA256SUMS
+    gpg2 --keyserver hkps://keyserver.ubuntu.com --recv-keys 0xFBB75451 0xEFE21092
+    gpg2 --verify SHA256SUMS.gpg SHA256SUMS
 
     # probably a better way to do this
     { shasum -a 256 -c SHA256SUMS 2>&1 | grep OK; } || { download_iso && verify_files; }
@@ -112,18 +109,18 @@ unmount_iso() {
 edit_bootloader() {
     # set timeout to 1s
     sed -i'' -e 's/^timeout 300/timeout 10/' ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg
-    # set default to the LABEL nuc
-    sed -i'' -e 's/^default.*/default nuc/' ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg
-    # add LABEL nuc
+    # set default to the LABEL custom
+    sed -i'' -e 's/^default.*/default custom/' ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg
+    # add LABEL custom
     tee -a ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/isolinux/isolinux.cfg <<EOF
-LABEL nuc
-  menu label ^NUC installation (preseed)
+LABEL custom
+  menu label ^CUSTOM installation (preseed)
   kernel /install/vmlinuz
-  append auto file=/cdrom/preseed/nuc.seed console-setup/ask_detect=false console-setup/layoutcode=us console-setup/modelcode=pc105 debconf/frontend=noninteractive debian-installer=en_US grub-installer/bootdev=/dev/sda fb=false initrd=/install/initrd.gz ramdisk_size=16384 root=/dev/ram rw kbd-chooser/method=us keyboard-configuration/layout=USA keyboard-configuration/variant=USA locale=en_US netcfg/get_domain=vm netcfg/get_hostname=packer noapic --
+  append auto file=/cdrom/preseed/custom.seed console-setup/ask_detect=false console-setup/layoutcode=us console-setup/modelcode=pc105 debconf/frontend=noninteractive debian-installer=en_US grub-installer/bootdev=/dev/sda fb=false initrd=/install/initrd.gz ramdisk_size=16384 root=/dev/ram rw kbd-chooser/method=us keyboard-configuration/layout=USA keyboard-configuration/variant=USA locale=en_US netcfg/get_domain=vm netcfg/get_hostname=packer noapic --
 EOF
 }
 copy_preseed() {
-    cp ../preseed.cfg ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/preseed/nuc.seed
+    cp ../preseed.cfg ${CD_IMAGE_DIR}/${ISO_MOUNT_DIR}/preseed/custom.seed
 }
 
 repack_iso() {
