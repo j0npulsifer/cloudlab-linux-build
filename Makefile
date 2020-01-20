@@ -1,23 +1,28 @@
 ARCH=amd64
 BUILD_DIR=build
-KERNEL_MAJOR_VERSION=5
-KERNEL_MINOR_VERSION=4
-KERNEL_PATCH_VERSION=12
+KERNEL_VERSION=5.4.13
+KERNEL_VERSION_BUILD=2
+KERNEL_MAJOR_VERSION=$(word 1, $(subst ., ,$(KERNEL_VERSION)))
+KERNEL_MINOR_VERSION=$(word 2, $(subst ., ,$(KERNEL_VERSION)))
+KERNEL_PATCH_VERSION=$(word 3, $(subst ., ,$(KERNEL_VERSION)))
 KERNEL_LOCAL_VERSION=-cloudlab
-KERNEL_VERSION=$(KERNEL_MAJOR_VERSION).$(KERNEL_MINOR_VERSION).$(KERNEL_PATCH_VERSION)
+.EXPORT_ALL_VARS:
 
 .PHONY: all
 all: help
 
 .PHONY: kernel
-kernel: verify-kernel genkconf build-kernel ## Downloads, verifies, configures, and starts a kernel build
+kernel: check-latest verify-kernel genkconf build-kernel ## Downloads, verifies, configures, and starts a kernel build
 
 .PHONY: verify-kernel
+# "ABAF 11C6 5A29 70B1 30AB  E3C4 79BE 3E43 0041 1886" Linus
+# "647F 2865 4894 E3BD 4571  99BE 38DB BDC8 6092 693E" Greg
 verify-kernel: ## Downloads and verifies $(KERNEL_VERSION)
+	gpg2 --keyserver hkp://keys.gnupg.org --locate-keys torvalds@kernel.org gregkh@kernel.org
+
 	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && \
 	wget -q --no-clobber https://cdn.kernel.org/pub/linux/kernel/v$(KERNEL_MAJOR_VERSION).x/linux-$(KERNEL_VERSION).tar.xz && \
 	wget -q --no-clobber https://cdn.kernel.org/pub/linux/kernel/v$(KERNEL_MAJOR_VERSION).x/linux-$(KERNEL_VERSION).tar.sign && \
-	gpg -q --locate-keys torvalds@kernel.org gregkh@kernel.org && \
 	unxz -c linux-$(KERNEL_VERSION).tar.xz | gpg -q --verify linux-$(KERNEL_VERSION).tar.sign - && \
 	tar -xaf linux-$(KERNEL_VERSION).tar.xz
 
@@ -31,6 +36,15 @@ genkconf: ## copies a kconfig from /boot into the build dir and makes olddefconf
 build-kernel: ## Builds .debs of the kernel
 	cd $(BUILD_DIR) && \
 	make -j$(shell getconf _NPROCESSORS_ONLN) -C linux-$(KERNEL_VERSION)/ bindeb-pkg LOCALVERSION=$(KERNEL_LOCALVERSION)
+
+.PHONY: check-latest
+check-latest: ## Checks kernel.org for the latest stable version
+	$(eval version=$(shell wget -q -O- https://kernel.org/finger_banner | awk '/latest stable version/ { print $$NF }'))
+	@if [ $(version) = $(KERNEL_VERSION) ]; then \
+		echo "You are on the latest version: $(KERNEL_VERSION)"; \
+	else \
+		echo "There is a newer version of the kernel available: $(version)"; \
+	fi
 
 .PHONY: clean
 clean: ## Remove build artifacts
