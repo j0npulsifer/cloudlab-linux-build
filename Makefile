@@ -1,11 +1,13 @@
 ARCH=amd64
 BUILD_DIR=build
-KERNEL_VERSION=5.4.13
+KERNEL_VERSION=5.4.15
 KERNEL_VERSION_BUILD=2
 KERNEL_MAJOR_VERSION=$(word 1, $(subst ., ,$(KERNEL_VERSION)))
 KERNEL_MINOR_VERSION=$(word 2, $(subst ., ,$(KERNEL_VERSION)))
 KERNEL_PATCH_VERSION=$(word 3, $(subst ., ,$(KERNEL_VERSION)))
 KERNEL_LOCAL_VERSION=-cloudlab
+UBUNTU_CODENAME=focal
+
 .EXPORT_ALL_VARS:
 
 .PHONY: all
@@ -45,6 +47,11 @@ check-latest: ## Checks kernel.org for the latest stable version
 	else \
 		echo "There is a newer version of the kernel available: $(version)"; \
 	fi
+
+.PHONY: download-ubuntu
+download-ubuntu: ## Downloads Ubuntu (Focal) source
+	mkdir -p $(BUILD_DIR)
+	git clone git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/$(UBUNTU_CODENAME) $(BUILD_DIR)/ubuntu-$(UBUNTU_CODENAME)
 
 .PHONY: clean
 clean: ## Remove build artifacts
